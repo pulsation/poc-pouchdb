@@ -94,19 +94,26 @@ enyo.kind({
               continuous : true,
               onChange: function (changes) {
                 if (err) {
-                  console.log("replicate(remote, local): err sync:");
+                  console.log("replicate(remote -> local): err sync:");
                   console.log(err);
                 } else {
-                  console.log("replicate(remote, local): changes:");
+                  console.log("replicate(remote -> local): changes:");
                   console.log(changes);
                 }
               }
+            },
+            function (err, response) {
+              if (err) {
+                // TODO: authentication
+                console.log("Replicate remote -> local: Error: ");
+                console.log(err);
+              }
+              console.log("Replicate remote -> local: Response:");
+              console.log(response);
             });
           }
         }
-      }
-             )
-      );
+      }));
     });
   },
 
@@ -133,13 +140,22 @@ enyo.kind({
           continuous : false,
           onChange: function(changes) {
             if (err) {
-              console.log("replicate(local, remote): err sync:");
+              console.log("Replicate(local -> remote): err sync:");
               console.log(err);
             } else {
-              console.log("replicate(local, remote): changes:");
+              console.log("Replicate(local -> remote): changes:");
               console.log(changes);
             }
           } 
+        },
+        function (err, response) {
+          if (err) {
+            // TODO: authentication
+            console.log("Replicate(local -> remote): Error: ");
+            console.log(err);
+          }
+          console.log("Replicate (local -> remote): Response:");
+          console.log(response);
         });
       }
       console.log(response);
