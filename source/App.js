@@ -7,11 +7,23 @@ var remoteDb = "http://192.168.169.163:5984/remotedb";
 var localDb = "localdb";
 // var localDb = remoteDb;
 
-//Pouch.replicate("http://192.168.169.163:5984/remotedb", "localdb", {
-
 enyo.kind({
   name: "DocList",
+  kind: "List",
+  onSetupItem: "setupDocItem",
+  fit: true,
+  components: [
+    {name: "docItem"}
+  ]
+});
+
+enyo.kind({
+  name: "DocListPanel",
   
+  components: [
+    {kind: DocList}
+  ],
+
   published: {
     db: null,
     dbChanges: null,
@@ -36,6 +48,21 @@ enyo.kind({
     }));
   },
 
+  allDocsChanged: function (inOldValue) {
+    console.log("setAllDocs called.");
+    this.$.docList.setCount(this.allDocs.length);
+    this.$.docList.refresh();
+  },
+
+  setupDocItem: function (inSender, inEvent) {
+    var docId = this.getAllDocs()[inEvent.index].id;
+
+    console.log("setupDocItem called.");
+    console.log(inEvent);
+
+    this.$.docList.$.docItem.setContent(docId);
+  },
+
   dbChanged: function(inOldValue) {
 
     // Launching replication.
@@ -58,13 +85,8 @@ enyo.kind({
       Pouch.replicate(remoteDb, localDb, {
         continuous : true,
         onChange: function (changes) {
-/*          if (err) {
-            console.log("replicate(remote -> local): err sync:");
-            console.log(err);
-          } else {*/
-            console.log("replicate(remote -> local): changes:");
-            console.log(changes);
-//          }
+          console.log("replicate(remote -> local): changes:");
+          console.log(changes);
         }
       },
       function (err, response) {
@@ -105,7 +127,6 @@ enyo.kind({
   kind: "FittableRows",
   fit: true,
   components:[
-    {kind: "onyx.Toolbar", content: "Hello World"},
     {kind: "enyo.Scroller", fit: true, components: [
       {name: "main", classes: "nice-padding", allowHtml: true}
     ]},
@@ -150,7 +171,6 @@ enyo.kind({
     console.log("docChanged:");
     this.$.main.addContent("Updated value: " + this.doc.text + "<br />\n");
     console.log(this.doc);
-    //    this.$.input.setValue(this.doc.text);
   },
 
   create: function () {
@@ -211,18 +231,13 @@ enyo.kind({
 });
 
 enyo.kind({
-  name: "App",
-  fit: true,
+  name: "AppPanels",
   kind: "Panels",
+  fit: true,
   components: [
-    {kind: "Signals", ondeviceready: "deviceReady"},
-    {kind: DocList},
+    {kind: DocListPanel},
     {kind: DocDetails}
   ],
-  deviceReady: function() {
-    // respond to deviceready event
-  }, 
-
   handlers: {
     onDbUpdated: "updateDocs"
   },
@@ -242,6 +257,20 @@ enyo.kind({
     
     // FIXME: Temporary, as getting all docs is not yet implemented.
     this.next();
-  },
+  }
+});
+
+enyo.kind({
+  name: "App",
+  fit: true,
+  kind: "FittableRows",
+  components: [
+    {kind: "Signals", ondeviceready: "deviceReady"},
+    {kind: "onyx.Toolbar", content: "Hello World"},
+    {kind: "AppPanels", fit: true}
+  ],
+  deviceReady: function() {
+    // respond to deviceready event
+  } 
 });
 
