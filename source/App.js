@@ -168,7 +168,11 @@ enyo.kind({
 
   displayDoc: function(params) {
     if (this.getDocId() !== null) {
-      params.db.get(this.getDocId(), { conflicts: true }, enyo.bind(this, function (err, doc) {
+      // TODO: not very smart db handling
+      if (params.db) {
+        this.setDb(params.db);
+      }
+      this.getDb().get(this.getDocId(), { conflicts: true }, enyo.bind(this, function (err, doc) {
         console.log("doc:");
         console.log(doc);
         if (doc._conflicts) {
@@ -210,7 +214,6 @@ enyo.kind({
 
     this.inherited(arguments);
 
-//    });
   },
 
   rendered: function () {
