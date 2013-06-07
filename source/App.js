@@ -14,30 +14,43 @@ enyo.kind({
   
   published: {
     db: null,
-    dbChanges: null
+    dbChanges: null,
+    allDocs: null
   },
 
   events: {
     onDbUpdated: ""
   },
 
+  handlers: {
+    onUpdateDocs: "updateAllDocs"
+  },
+
+  updateAllDocs: function (inSender, inEvent) {
+    console.log("updateAllDocs called.");
+
+    inEvent.db.allDocs({}, enyo.bind(this, function (err, response) {
+      console.log("allDocsResponse:");
+      console.log(response);
+      this.setAllDocs(response.rows);
+    }));
+  },
+
   dbChanged: function(inOldValue) {
 
-    var that = this;
-
     // Launching replication.
-    if (that.getDbChanges() === null) {
+    if (this.getDbChanges() === null) {
       console.log("Registering to changes.");
-      that.setDbChanges(that.getDb().changes({
+      this.setDbChanges(this.getDb().changes({
         continuous: true,
-        onChange: function(change) {
+        onChange: enyo.bind(this, function(change) {
 
           console.log("db onChange:");
           console.log(change);
           
-          that.doDbUpdated({ db: that.getDb(), change: change });
+          this.doDbUpdated({ db: this.getDb(), change: change });
 
-        }
+        })
       }));
 
       console.log("Starting continuous replication from remote to local.");
@@ -67,24 +80,23 @@ enyo.kind({
   },
 
   create: function () {
-    var that = this;
 
     this.inherited(arguments);
 
-    Pouch.destroy(localDb, function() { 
+    Pouch.destroy(localDb, enyo.bind(this, function() { 
       console.log("Database destroyed.");
 
-      Pouch(localDb, function (err, db) {
+      Pouch(localDb, enyo.bind(this, function (err, db) {
         console.log(" *** FIXME: This callback is called several times in cordova/android. *** ");
         if (err) {
           console.log("error creating database:");
           console.log(err);
         } else {
-          that.setDb(db);
+          this.setDb(db);
           console.log(" Database created ");
         }
-      });
-    });
+      }));
+    }));
   }
 });
 
@@ -233,10 +245,3 @@ enyo.kind({
   },
 });
 
-/*
-        db.allDocs({}, function (err, response) {
-          console.log("allDocsResponse:");
-          console.log(response);
-        });
-      });
-      */
