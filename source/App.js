@@ -13,8 +13,15 @@ enyo.kind({
   onSetupItem: "setupDocItem",
   fit: true,
   components: [
-    {name: "docItem"}
-  ]
+    {name: "docItem", ontap: "docItemTapped"}
+  ],
+  events: {
+    onChooseDocIndex: ""
+  },
+  docItemTapped: function (inSender, inEvent) {
+    console.log("docItemTapped");
+    this.doChooseDocIndex(inEvent);
+  }
 });
 
 enyo.kind({
@@ -31,7 +38,8 @@ enyo.kind({
   },
 
   events: {
-    onDbUpdated: ""
+    onDbUpdated: "",
+    onDbHandlerChanged: ""
   },
 
   handlers: {
@@ -64,6 +72,8 @@ enyo.kind({
   },
 
   dbChanged: function(inOldValue) {
+    
+    this.doDbHandlerChanged(this.getDb());
 
     // Launching replication.
     if (this.getDbChanges() === null) {
@@ -137,11 +147,40 @@ enyo.kind({
   ],
 
   published: {
-    doc: null
+    doc: null,
+    docId: null,
+    db: null
   },
 
   handlers: {
-    onUpdateDocs: "updateDoc"
+    onUpdateDocs: "updateDoc",
+    onViewDoc: "viewDoc"
+  },
+
+  viewDoc: function (inSender, inEvent) {
+    this.setDocId(inEvent.doc.id);
+    this.$.main.setContent("");
+    this.displayDoc(inEvent);
+  },
+
+  docIdChanged: function (inOldValue) {
+  },
+
+  displayDoc: function(params) {
+    if (this.getDocId() !== null) {
+      params.db.get(this.getDocId(), { conflicts: true }, enyo.bind(this, function (err, doc) {
+        console.log("doc:");
+        console.log(doc);
+        if (doc._conflicts) {
+          // TODO: manage conflicts
+          console.log("Conflicts in dbChanges: " + doc._conflicts.length);
+          console.log(doc._conflicts);
+        } else {
+          console.log("dbChanges: no conflict!");
+        }
+        this.setDoc(doc);
+      }));
+    }
   },
 
   updateDoc: function (inSender, inEvent) {
@@ -150,18 +189,8 @@ enyo.kind({
 
     console.log("updateDoc called.");
 
-    inEvent.db.get(inEvent.change.id, { conflicts: true }, function (err, doc) {
-      console.log("doc:");
-      console.log(doc);
-      if (doc._conflicts) {
-        // TODO: manage conflicts
-        console.log("Conflicts in dbChanges: " + doc._conflicts.length);
-        console.log(doc._conflicts);
-      } else {
-        console.log("dbChanges: no conflict!");
-      }
-      that.setDoc(doc);
-    });
+    this.displayDoc(this.getDb(), inEvent.change.id);
+
   },
 
   dbChanged: function(inOldValue) {
@@ -239,11 +268,14 @@ enyo.kind({
     {kind: DocDetails}
   ],
   handlers: {
-    onDbUpdated: "updateDocs"
+    onDbUpdated: "updateDocs",
+    onChooseDocIndex: "viewDoc",
+    onDbHandlerChanged: "changeDbHandler"
   },
   
   events: {
-    onUpdateDocs: ""
+    onUpdateDocs: "",
+    onViewDoc: ""
   },
 
   updateDocs: function (inSender, inEvent) {
@@ -251,12 +283,21 @@ enyo.kind({
     this.waterfall("onUpdateDocs", inEvent);
   },
 
+  changeDbHandler: function () {
+  },
+
+  viewDoc: function (inSender, inEvent) {
+    console.log("viewDoc");
+    console.log(inEvent.index);
+//    inEvent.doc = this.$.docListPanel.getAllDocs()[inEvent.index];
+    console.log(inEvent.db);
+    this.waterfall("onViewDoc", { doc: this.$.docListPanel.getAllDocs()[inEvent.index], db: this.$.docListPanel.getDb() });
+    this.next();
+  },
+
   rendered: function () {
 
     this.inherited(arguments);
-    
-    // FIXME: Temporary, as getting all docs is not yet implemented.
-    this.next();
   }
 });
 
