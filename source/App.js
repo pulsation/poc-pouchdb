@@ -8,12 +8,26 @@ var localDb = "localdb";
 // var localDb = remoteDb;
 
 enyo.kind({
+  name: "LoginToolbar",
+  kind: "onyx.Toolbar",
+  components: [
+    {kind: "onyx.InputDecorator", components: [
+      { kind: "onyx.Input", placeholder: "login" }
+    ]},
+    {kind: "onyx.InputDecorator", components: [
+      { kind: "onyx.Input", placeholder: "password" },
+    ]},
+    { kind: "onyx.Button", content: "Log in" }
+  ]
+});
+
+enyo.kind({
   name: "App",
   fit: true,
   kind: "FittableRows",
   components: [
     {kind: "Signals", ondeviceready: "deviceReady"},
-    {kind: "onyx.Toolbar", content: "Hello World"},
+    {kind: "LoginToolbar", content: "Hello World"},
     {kind: "AppPanels", fit: true}
   ],
   deviceReady: function() {
