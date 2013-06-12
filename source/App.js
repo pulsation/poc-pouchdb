@@ -1,9 +1,9 @@
 Pouch.DEBUG = true;
-/*
-*/
+
+var acacia = window.acacia || {};
 
 // var remoteDb = "http://localhost:5984/remotedb";
-var DSN = function (inOptions) {
+acacia.DBManager = function (inOptions) {
 
   return enyo.mixin({
     protocol    : "",
@@ -28,7 +28,7 @@ var DSN = function (inOptions) {
   }, inOptions);
 };
 
-var remoteDb = DSN({
+acacia.remoteDb = acacia.DBManager({
     protocol    : "http",
     serverName  : "192.168.169.163",
     port        : 5984,
@@ -37,12 +37,9 @@ var remoteDb = DSN({
     passwd      : ""
 });
 
-var localDb = DSN({
+acacia.localDb = acacia.DBManager({
   dbName: "localdb"
 });
-
-console.log("remoteDb: " + remoteDb);
-console.log("localDb: " + localDb);
 
 enyo.kind({
   name: "LoginToolbar",

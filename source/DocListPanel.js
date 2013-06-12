@@ -64,9 +64,9 @@ enyo.kind({
         })
       }));
 
-      console.log("Starting continuous replication from " + remoteDb.url + " to " + localDb.url);
+      console.log("Starting continuous replication from " + acacia.remoteDb.url + " to " + acacia.localDb.url);
 
-      Pouch.replicate(remoteDb.url, localDb.url, {
+      Pouch.replicate(acacia.remoteDb.url, acacia.localDb.url, {
         continuous : true,
         onChange: function (changes) {
           console.log("replicate(remote -> local): changes:");
@@ -91,10 +91,10 @@ enyo.kind({
 
     this.inherited(arguments);
 
-    Pouch.destroy(localDb.url, enyo.bind(this, function() { 
+    Pouch.destroy(acacia.localDb.url, enyo.bind(this, function() { 
       console.log("Database destroyed.");
 
-      Pouch(localDb.url, enyo.bind(this, function (err, db) {
+      Pouch(acacia.localDb.url, enyo.bind(this, function (err, db) {
         console.log(" *** FIXME: This callback is called several times in cordova/android. *** ");
         if (err) {
           console.log("error creating database:");
@@ -104,6 +104,7 @@ enyo.kind({
           console.log(" Database created ");
         }
       }));
+
     }));
   }
 });
