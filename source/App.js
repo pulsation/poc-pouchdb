@@ -3,9 +3,46 @@ Pouch.DEBUG = true;
 */
 
 // var remoteDb = "http://localhost:5984/remotedb";
-var remoteDb = "http://192.168.169.163:5984/remotedb";
-var localDb = "localdb";
-// var localDb = remoteDb;
+var DSN = function (inOptions) {
+
+  return enyo.mixin({
+    protocol    : "",
+    serverName  : "",
+    port        : -1,
+    dbName      : "",
+    login       : "",
+    passwd      : "",
+
+    get url () {
+      return (this.protocol !== "" ? this.protocol + "://" : "") +
+        (this.login !== "" ? this.login + ":" + this.passwd + "@" : "") +
+        this.serverName + 
+        (this.port > 0 ? ":" + this.port.toString() + "/" : "") + 
+        this.dbName;
+    },
+
+    toString: function () {
+      return this.url;
+    }
+
+  }, inOptions);
+};
+
+var remoteDb = DSN({
+    protocol    : "http",
+    serverName  : "192.168.169.163",
+    port        : 5984,
+    dbName      : "remotedb",
+    login       : "",
+    passwd      : ""
+});
+
+var localDb = DSN({
+  dbName: "localdb"
+});
+
+console.log("remoteDb: " + remoteDb);
+console.log("localDb: " + localDb);
 
 enyo.kind({
   name: "LoginToolbar",
